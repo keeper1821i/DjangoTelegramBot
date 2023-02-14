@@ -2,6 +2,8 @@ import datetime
 
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
+from telebot.types import ReplyKeyboardRemove, CallbackQuery
+
 from FinBot.config import TOKEN
 from telebot import TeleBot
 from telebot import types
@@ -9,8 +11,12 @@ from bot_app.dictionary import dictionary
 from bot_app.models import Profile
 from bot_app.servises import new_password
 from expenses_app.models import Expenses
+from telebot_calendar import CallbackData
+import telebot_calendar
 
 bot = TeleBot(TOKEN)
+calendar = telebot_calendar.Calendar(language=telebot_calendar.RUSSIAN_LANGUAGE)
+calendar_1_callback = CallbackData("calendar_1", "action", "year", "month", "day")
 
 
 class Command(BaseCommand):
@@ -67,7 +73,7 @@ def bot_message(message):
             item1 = types.KeyboardButton('Статистика за день')
             item2 = types.KeyboardButton('Статистика за все время')
             item3 = types.KeyboardButton('Статистика за период')
-            item4 = types.KeyboardButton('Назад')
+            item4 = types.KeyboardButton('Назад \U0001F448')
             murkup.add(item1, item2, item3, item4)
 
             bot.send_message(chat_id=message.chat.id, text='Какой тип статистики желаете получить?', reply_markup=murkup)
@@ -78,7 +84,7 @@ def bot_message(message):
         elif message.text == 'Статистика за день':
             get_day_history(message)
 
-        elif message.text == 'Назад':
+        elif message.text == 'Назад \U0001F448':
             murkup = types.ReplyKeyboardMarkup(resize_keyboard=True)
             item1 = types.KeyboardButton('Статистика')
             item2 = types.KeyboardButton('Внести траты')
@@ -90,69 +96,123 @@ def bot_message(message):
 
         elif message.text == 'Внести траты':
             murkup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            item1 = types.KeyboardButton('продукты')
-            item2 = types.KeyboardButton('кофе')
-            item3 = types.KeyboardButton('обед')
-            item4 = types.KeyboardButton('кафе')
-            item5 = types.KeyboardButton('общественный транспорт')
-            item6 = types.KeyboardButton('машина')
-            item7 = types.KeyboardButton('телефон')
-            item8 = types.KeyboardButton('книги')
-            item9 = types.KeyboardButton('интернет')
-            item10 = types.KeyboardButton('подписки')
-            item11 = types.KeyboardButton('прочее')
-            item12 = types.KeyboardButton('Назад')
+            item1 = types.KeyboardButton('Продукты \U0001F353')
+            item2 = types.KeyboardButton('Проезд \U0001F68C')
+            item3 = types.KeyboardButton('Подарки \U0001F381')
+            item4 = types.KeyboardButton('Платежи, комисии \U0001F4B0')
+            item5 = types.KeyboardButton('Отдых и развлечения \U0001F3D6')
+            item6 = types.KeyboardButton('Образование \U0001F4D7')
+            item7 = types.KeyboardButton('Машина \U0001F697')
+            item8 = types.KeyboardButton('Кафе и рестораны \U00002615')
+            item9 = types.KeyboardButton('Здоровье и фитнес \U0001F3C3')
+            item10 = types.KeyboardButton('Забота о себе \U0001F485')
+            item11 = types.KeyboardButton('Дети \U0001F47C')
+            item12 = types.KeyboardButton('Назад \U0001F448')
+            item13 = types.KeyboardButton('Покупка одежды, техника \U0001F5A5')
+            item14 = types.KeyboardButton('Другие расходы \U0001F4CC')
 
-            murkup.add(item1, item2, item3, item4, item5, item6, item7, item8, item9, item10, item11, item12)
+            murkup.add(item1, item2, item3, item4, item5, item6, item7, item8, item9, item10, item11, item12, item13, item14)
 
             bot.send_message(chat_id=message.chat.id, text='Выберите категорию и введите сумму', reply_markup=murkup)
         elif message.text == 'Категории трат':
             bot.send_message(chat_id=message.chat.id, text=dictionary['category'])
 
-        elif message.text == 'продукты':
+        elif message.text == 'Продукты \U0001F353':
             bot.send_message(chat_id=message.chat.id, text=dictionary['add_product'])
             bot.register_next_step_handler(message, add_prodict, message.text)
 
-        elif message.text == 'кофе':
+        elif message.text == 'Проезд \U0001F68C':
             bot.send_message(chat_id=message.chat.id, text=dictionary['add_product'])
             bot.register_next_step_handler(message, add_prodict, message.text)
 
-        elif message.text == 'обед':
+        elif message.text == 'Подарки \U0001F381':
             bot.send_message(chat_id=message.chat.id, text=dictionary['add_product'])
             bot.register_next_step_handler(message, add_prodict, message.text)
 
-        elif message.text == 'кафе':
+        elif message.text == 'Платежи, комисии \U0001F4B0':
             bot.send_message(chat_id=message.chat.id, text=dictionary['add_product'])
             bot.register_next_step_handler(message, add_prodict, message.text)
 
-        elif message.text == 'общественный транспорт':
+        elif message.text == 'Отдых и развлечения \U0001F3D6':
             bot.send_message(chat_id=message.chat.id, text=dictionary['add_product'])
             bot.register_next_step_handler(message, add_prodict, message.text)
 
-        elif message.text == 'машина':
+        elif message.text == 'Образование \U0001F4D7':
             bot.send_message(chat_id=message.chat.id, text=dictionary['add_product'])
             bot.register_next_step_handler(message, add_prodict, message.text)
 
-        elif message.text == 'телефон':
+        elif message.text == 'Машина \U0001F697':
             bot.send_message(chat_id=message.chat.id, text=dictionary['add_product'])
             bot.register_next_step_handler(message, add_prodict, message.text)
 
-        elif message.text == 'книги':
+        elif message.text == 'Кафе и рестораны \U00002615':
             bot.send_message(chat_id=message.chat.id, text=dictionary['add_product'])
             bot.register_next_step_handler(message, add_prodict, message.text)
 
-        elif message.text == 'интернет':
+        elif message.text == 'Здоровье и фитнес \U0001F3C3':
             bot.send_message(chat_id=message.chat.id, text=dictionary['add_product'])
             bot.register_next_step_handler(message, add_prodict, message.text)
 
-        elif message.text == 'подписки':
+        elif message.text == 'Забота о себе \U0001F485':
             bot.send_message(chat_id=message.chat.id, text=dictionary['add_product'])
             bot.register_next_step_handler(message, add_prodict, message.text)
 
-        elif message.text == 'прочее':
+        elif message.text == 'Дети \U0001F47C':
             bot.send_message(chat_id=message.chat.id, text=dictionary['add_product'])
             bot.register_next_step_handler(message, add_prodict, message.text)
 
+        elif message.text == 'Покупка одежды, техника \U0001F5A5':
+            bot.send_message(chat_id=message.chat.id, text=dictionary['add_product'])
+            bot.register_next_step_handler(message, add_prodict, message.text)
+
+        elif message.text == 'Другие расходы \U0001F4CC':
+            bot.send_message(chat_id=message.chat.id, text=dictionary['add_product'])
+            bot.register_next_step_handler(message, add_prodict, message.text)
+
+        elif message.text == 'Статистика за период':
+            now = datetime.datetime.now()  # Get the current date
+            bot.send_message(
+                chat_id=message.chat.id,
+                text="Выберите дату",
+                reply_markup=calendar.create_calendar(
+                    name=calendar_1_callback.prefix,
+                    year=now.year,
+                    month=now.month,  # Specify the NAME of your calendar
+                ),
+            )
+
+@bot.callback_query_handler(
+    func=lambda call: call.data.startswith(calendar_1_callback.prefix))
+
+
+def callback_inline(call: CallbackQuery):
+    """
+    Обработка inline callback запросов
+    :param call:
+    :return:
+    """
+
+    # At this point, we are sure that this calendar is ours. So we cut the line by the separator of our calendar
+    name, action, year, month, day = call.data.split(calendar_1_callback.sep)
+    # Processing the calendar. Get either the date or None if the buttons are of a different type
+    date = calendar.calendar_query_handler(
+        bot=bot, call=call, name=name, action=action, year=year, month=month, day=day
+    )
+    # There are additional steps. Let's say if the date DAY is selected, you can execute your code. I sent a message.
+    if action == "DAY":
+        bot.send_message(
+            chat_id=call.from_user.id,
+            text=f"You have chosen {date.strftime('%d.%m.%Y')}",
+            reply_markup=ReplyKeyboardRemove(),
+        )
+        print(f"{calendar_1_callback}: Day: {date.strftime('%d.%m.%Y')}")
+    elif action == "CANCEL":
+        bot.send_message(
+            chat_id=call.from_user.id,
+            text="Cancellation",
+            reply_markup=ReplyKeyboardRemove(),
+        )
+        print(f"{calendar_1_callback}: Cancellation")
 
 def add_prodict(message, category):
 
