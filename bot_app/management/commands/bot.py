@@ -1,4 +1,5 @@
 import datetime
+import re
 
 import telebot_calendar
 from django.contrib.auth.models import User
@@ -8,14 +9,14 @@ from telebot.types import ReplyKeyboardRemove
 
 from FinBot.config import TOKEN
 from bot_app.dictionary import category_list, dictionary
-from bot_app.management.services import get_history
+from bot_app.management.services import get_history, period_history
 from bot_app.models import Profile
 from expenses_app.models import Expenses
 
 bot = TeleBot(TOKEN, threaded=False)
 calendar_0 = telebot_calendar.Calendar(language=telebot_calendar.RUSSIAN_LANGUAGE)
 calendar_1_callback = telebot_calendar.CallbackData("calendar_1", "action", "year", "month", "day")
-
+f_date = None
 
 class Command(BaseCommand):
     help = 'Телеграм бот'
@@ -141,8 +142,27 @@ def bot_message(message):
             bot.send_message(chat_id=message.chat.id, text=dictionary['add_product'])
             bot.register_next_step_handler(message, add_product, message.text)
 
+        elif message.text == 'Статистика за период':
+            global f_date
+            f_date = None
+            now = datetime.datetime.now()  # Get the current date
+            bot.send_message(
+                chat_id=message.chat.id,
+                text="Выберите дату",
+                reply_markup=calendar_0.create_calendar(
+                    name=calendar_1_callback.prefix,
+                    year=now.year,
+                    month=now.month,  # Specify the NAME of your calendar
+                ),
+            )
+            bot.register_next_step_handler(message, statistic)
+
 
 def add_product(message, category):
+    temp = re.compile("(\w+?)(\d+)")
+    res = re.findall(temp, message.text)
+    print(res)
+    print(message.text)
     product_list = message.text.split()
     if len(product_list) == 2:
         try:
@@ -168,6 +188,7 @@ def add_product(message, category):
 
 
 def statistic(message):
+    bot.send_message(chat_id=message.chat.id, text='Выберите дату')
     now = datetime.datetime.now()  # Get the current date
     bot.send_message(
         chat_id=message.chat.id,
@@ -204,7 +225,9 @@ def callback_inline(call):
             reply_markup=ReplyKeyboardRemove(),
         )
         print(f"{calendar_1_callback}: Day: {date.strftime('%d.%m.%Y')}")
-        # bot.register_next_step_handler(call.message, bot_message, date.strftime)
+        d = date
+        first_date(call.message, d)
+        print(d)
     elif action == "CANCEL":
         bot.send_message(
             chat_id=call.from_user.id,
@@ -212,3 +235,27 @@ def callback_inline(call):
             reply_markup=ReplyKeyboardRemove(),
         )
         print(f"{calendar_1_callback}: Cancellation")
+
+
+def first_date(message, d):
+    global f_date
+    sd = None
+    if f_date:
+        fd = f_date
+        sd = d
+        bot.send_message(chat_id=message.chat.id, text=f'Статистика за период {fd} - {sd}')
+        f_date = None
+        period_history(message, fd, sd)
+        murkup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        item1 = types.KeyboardButton('Статистика')
+        item2 = types.KeyboardButton('Внести траты')
+        item3 = types.KeyboardButton('Категории трат')
+        item4 = types.KeyboardButton('Подсказки')
+        murkup.add(item1, item2, item3, item4)
+        bot.send_message(chat_id=message.chat.id, text='Выберите следующее действие', reply_markup=murkup)
+        bot.register_next_step_handler(message, bot_message)
+    else:
+        f_date = d
+        statistic(message)
+
+        # bot.register_next_step_handler(message, bot_message)

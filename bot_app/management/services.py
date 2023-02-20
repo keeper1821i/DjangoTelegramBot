@@ -30,3 +30,19 @@ def history(message):
         expenses = Expenses.objects.filter(
             user_id=User.objects.filter(username=message.chat.username).values('id')[0]['id'])
         return expenses
+
+
+def period_history(message, fd, sd):
+    expenses = Expenses.objects.filter(
+        user_id=User.objects.filter(username=message.chat.username).values('id')[0]['id'],
+        created__gte=fd, created__lte=sd)
+    if expenses:
+        res = ''
+        total_exp = 0
+        for i in expenses:
+            res += f'{i.product}({i.category}): {i.money}руб.\n'
+            total_exp += i.money
+        bot.send_message(chat_id=message.chat.id, text=res)
+        bot.send_message(chat_id=message.chat.id, text=f'Всего трат на сумму: {total_exp}')
+    else:
+        bot.send_message(chat_id=message.chat.id, text='За выбранный период у Вас не было расходов')
