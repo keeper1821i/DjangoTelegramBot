@@ -46,3 +46,13 @@ def period_history(message, fd, sd):
         bot.send_message(chat_id=message.chat.id, text=f'Всего трат на сумму: {total_exp}')
     else:
         bot.send_message(chat_id=message.chat.id, text='За выбранный период у Вас не было расходов')
+
+
+def add_product(message, category, expenses, summ):
+    Expenses.objects.create(
+            category=category,
+            product=expenses,
+            money=int(summ),
+            user_id=User.objects.filter(username=message.chat.username).values('id')[0]['id']
+        )
+    bot.send_message(chat_id=message.chat.id, text='Расходы успешно добавлены!')
