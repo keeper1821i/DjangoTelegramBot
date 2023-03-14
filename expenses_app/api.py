@@ -21,14 +21,13 @@ class ExpensesList(ListModelMixin, CreateModelMixin, GenericAPIView):
     def get_queryset(self):
         queryset = Expenses.objects.all()
         user_name = self.request.query_params.get('user')
+        num = self.request.query_params.get('num')
         if user_name:
             user = User.objects.get(username=user_name)
             queryset = queryset.filter(user=user.id)
+        if num:
+            queryset = queryset.reverse()[:int(num)]
         return queryset
+
     def get(self, request):
         return self.list(request)
-
-    def post(self, request, format=None):
-        return self.create(request)
-
-

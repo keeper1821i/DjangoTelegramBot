@@ -37,7 +37,8 @@ def start_message(message) -> None:
     item4 = types.KeyboardButton('Подсказки')
     murkup.add(item1, item2, item3, item4)
     bot.send_message(chat_id=message.chat.id, text=dictionary['started_message'], reply_markup=murkup)
-    if not User.objects.filter(username=message.chat.username):
+    user_name = 'User' + str(message.chat.id)
+    if not User.objects.filter(username=user_name):
         murkup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         item1 = types.KeyboardButton('Мужской')
         item2 = types.KeyboardButton('Женский')
@@ -68,10 +69,11 @@ def ask_gender(message):
 
 
 def ask_time_zone(message, g):
-    User.objects.create_user(username=message.chat.username, password='12345678')
+    user_name = 'User' + str(message.chat.id)
+    User.objects.create_user(username=user_name, password='12345678')
     Profile.objects.create(external_id=message.chat.id,
-                           user_id=User.objects.filter(username=message.chat.username).values('id')[0]['id'],
-                           name=message.chat.username,
+                           user_id=User.objects.filter(username=user_name).values('id')[0]['id'],
+                           name=user_name,
                            gender=g,
                            time_zone=message.text)
     murkup = types.ReplyKeyboardMarkup(resize_keyboard=True)
