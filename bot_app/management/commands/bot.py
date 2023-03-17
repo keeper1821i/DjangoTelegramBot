@@ -153,7 +153,13 @@ def asc_expenses(message, category):
 
 def asc_summ(message, category, expenses):
     bot.send_message(chat_id=message.chat.id, text='Обработка.....')
-    add_product(message, category, expenses, message.text)
+    try:
+        if isinstance(int(message.text), int):
+            add_product(message, category, expenses, message.text)
+    except ValueError:
+        bot.send_message(chat_id=message.chat.id, text='Ошибка формата, введите число')
+        bot.register_next_step_handler(message, asc_summ, category, message.text)
+
 
 
 def show_calendar(message):
