@@ -2,8 +2,6 @@ from django.contrib.auth.models import User
 from django.db import models
 
 
-
-
 class Expenses(models.Model):
     category = models.CharField(verbose_name='Категория трат', max_length=50)
     money = models.IntegerField(verbose_name='Потраченная сумма')
