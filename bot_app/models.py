@@ -8,8 +8,7 @@ class Profile(models.Model):
     name = models.CharField(verbose_name='Имя пользователя', max_length=100)
     gender = models.CharField(max_length=10, verbose_name='пол', null=True)
     time_zone = models.CharField(verbose_name='Часовой пояс', max_length=3, null=True)
-
-
+    token = models.CharField(verbose_name='Токен', max_length=65, null=True)
 
     class Meta:
         verbose_name = 'Профиль'

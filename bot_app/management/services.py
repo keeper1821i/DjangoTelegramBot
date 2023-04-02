@@ -58,7 +58,5 @@ def add_product(message, category, expenses, summ):
             money=int(summ),
             user_id=User.objects.filter(username=user_name).values('id')[0]['id']
         )
-    print(message.chat)
-    print(message)
     bot.send_message(chat_id=message.chat.id, text='Расходы успешно добавлены!')
 

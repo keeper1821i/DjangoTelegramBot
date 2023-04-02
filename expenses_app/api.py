@@ -23,7 +23,7 @@ class ExpensesList(ListModelMixin, CreateModelMixin, GenericAPIView):
         user_name = self.request.query_params.get('user') #параметр выбора пользователя
         num = self.request.query_params.get('num') # параметр выбора количества последних трат
         if user_name:
-            user = User.objects.get(username=user_name)
+            user = User.objects.get(username='User' + user_name)
             queryset = queryset.filter(user=user.id)
         if num:
             queryset = queryset.reverse()[:int(num)]
@@ -43,7 +43,7 @@ class TopCategory(APIView):
         k = 15
         print(1)
         if user_name:
-            user = User.objects.get(username=user_name)
+            user = User.objects.get(username='User' + user_name)
             queryset = queryset.filter(user=user.id)
         if num:
             k = num
@@ -63,7 +63,7 @@ class ExpensivePurchases(ListModelMixin, CreateModelMixin, GenericAPIView):
         num = self.request.query_params.get('num')  # параметр выбора количества трат
         k = 1
         if user_name:
-            user = User.objects.get(username=user_name)
+            user = User.objects.get(username='User' + user_name)
             queryset = queryset.filter(user=user.id)
         if num:
             k = int(num)
