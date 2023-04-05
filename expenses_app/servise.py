@@ -1,5 +1,9 @@
 import itertools
 
+from django.contrib.auth.models import User
+
+from bot_app.models import Profile
+
 
 def top_cat(queryset, k):
     cat_dict = {}
@@ -17,3 +21,13 @@ def top_cat(queryset, k):
     print(sorted_dict)
     print(cat_list)
     return cat_list
+
+
+def check_token(token, user):
+    queryset = Profile.objects.all()
+    user = User.objects.get(username='User' + user)
+    profile = queryset.get(user=user.id)
+    if profile.token == token:
+        return True
+    else:
+        return False
