@@ -8,7 +8,7 @@ from bot_app.serializers import ProfileSerializer
 
 
 class AddToken(APIView):
-
+    """апи для получения токена пользователя"""
     def post(self, request):
         queryset = Profile.objects.all()
         username = request.data.get('user')

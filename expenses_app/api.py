@@ -1,17 +1,39 @@
 from django.contrib.auth.models import User
+
 from rest_framework import viewsets, status
+from rest_framework.filters import OrderingFilter
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
-from rest_framework.generics import GenericAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView
 from rest_framework.views import APIView
 from expenses_app.models import Expenses
 from expenses_app.serializers import ExpensesSerializer
 from expenses_app.servise import top_cat, check_token
 
 
-class ExpensesViewSet(viewsets.ModelViewSet):
-    queryset = Expenses.objects.all()
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
+
+class ExpensesViewSet(ListAPIView):
     serializer_class = ExpensesSerializer
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [OrderingFilter]
+    ordering_fields = ['category', 'money', 'created']
+
+    def get_queryset(self):
+        queryset = Expenses.objects.all()
+        user_name = self.request.query_params.get('user')  # параметр выбора пользователя
+        token = self.request.query_params.get('token')  # токен для проверки авторизации
+        if check_token(token, user_name):
+            if user_name:
+                user = User.objects.get(username='User' + user_name)
+                queryset = queryset.filter(user=user.id)
+            return queryset
+        else:
+            return Response('Не верный токен', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ExpensesList(ListModelMixin, CreateModelMixin, GenericAPIView):
