@@ -27,10 +27,16 @@ class ExpensesViewSet(ListAPIView):
         queryset = Expenses.objects.all()
         user_name = self.request.query_params.get('user')  # параметр выбора пользователя
         token = self.request.query_params.get('token')  # токен для проверки авторизации
+        date_start = self.request.query_params.get('date_start')
+        date_end = self.request.query_params.get('date_end')
         if check_token(token, user_name):
             if user_name:
                 user = User.objects.get(username='User' + user_name)
                 queryset = queryset.filter(user=user.id)
+            if date_start:
+                queryset = queryset.filter(created__gt=date_start)
+            if date_end:
+                queryset = queryset.filter(created__lt=date_end)
             return queryset
         else:
             return Response('Не верный токен', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
