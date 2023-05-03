@@ -1,10 +1,6 @@
-# Указывает Docker использовать официальный образ python 3 с dockerhub в качестве базового образа
-FROM python:3
-# Устанавливает переменную окружения, которая гарантирует, что вывод из python будет отправлен прямо в терминал без предварительной буферизации
-ENV PYTHONUNBUFFERED 1
-# Устанавливает рабочий каталог контейнера — "app"
+FROM ubuntu:latest
+RUN apt-get update -qy
+RUN apt-get install -qy python3.10 python3-pip
+COPY . /app
 WORKDIR /app
-# Копирует все файлы из нашего локального проекта в контейнер
-ADD ./app
-# Запускает команду pip install для всех библиотек, перечисленных в requirements.txt
 RUN pip install -r requirements.txt
