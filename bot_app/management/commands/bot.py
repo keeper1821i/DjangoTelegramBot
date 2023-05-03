@@ -1,5 +1,5 @@
 import datetime
-
+import time
 import telebot_calendar
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
@@ -23,7 +23,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         bot.enable_save_next_step_handlers(delay=2)  # Сохранение обработчиков
         bot.load_next_step_handlers()  # Загрузка обработчиков
-        bot.polling(none_stop=True)  # Бесконечный цикл бота
+        while True:
+        	try:
+        		bot.polling(none_stop=True)  # Бесконечный цикл бота
+        	except Exception as e:
+        		time.sleep(3)
+        		print(e)
+        	
 
 
 

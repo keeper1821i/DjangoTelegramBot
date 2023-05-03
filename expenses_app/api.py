@@ -34,9 +34,9 @@ class ExpensesViewSet(ListAPIView):
                 user = User.objects.get(username='User' + user_name)
                 queryset = queryset.filter(user=user.id)
             if date_start:
-                queryset = queryset.filter(created__gt=date_start)
+                queryset = queryset.filter(created__gte=date_start)
             if date_end:
-                queryset = queryset.filter(created__lt=date_end)
+                queryset = queryset.filter(created__lte=date_end)
             return queryset
         else:
             return Response('Не верный токен', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
