@@ -47,7 +47,7 @@ class ExpensesList(ListModelMixin, CreateModelMixin, GenericAPIView):
     serializer_class = ExpensesSerializer
 
     def get_queryset(self):
-        queryset = Expenses.objects.all()
+        queryset = Expenses.objects.all().order_by('created')
         user_name = self.request.query_params.get('user') #параметр выбора пользователя
         num = self.request.query_params.get('num') # параметр выбора количества последних трат
         token = self.request.query_params.get('token') # токен для проверки авторизации

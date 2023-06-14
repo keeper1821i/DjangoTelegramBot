@@ -8,9 +8,9 @@ from telebot.types import ReplyKeyboardRemove
 
 from FinBot.config import TOKEN
 from bot_app.dictionary import category_list, dictionary
-from bot_app.management.services import get_history, period_history, add_product
+from bot_app.management.services import get_history, period_history, add_product, check_limit, get_plan, bay_from_list, add_product_in_bay_list
 from bot_app.models import Profile
-
+from plans_app.models import PlanExpenses
 
 bot = TeleBot(TOKEN, threaded=False)
 calendar_0 = telebot_calendar.Calendar(language=telebot_calendar.RUSSIAN_LANGUAGE)
@@ -24,12 +24,12 @@ class Command(BaseCommand):
         bot.enable_save_next_step_handlers(delay=2)  # Сохранение обработчиков
         bot.load_next_step_handlers()  # Загрузка обработчиков
         while True:
-        	try:
-        		bot.polling(none_stop=True)  # Бесконечный цикл бота
-        	except Exception as e:
-        		time.sleep(3)
-        		print(e)
-        	
+            try:
+                bot.polling(none_stop=True)  # Бесконечный цикл бота
+            except Exception as e:
+                time.sleep(3)
+                print(e)
+
 
 
 
@@ -41,7 +41,8 @@ def start_message(message) -> None:
     item2 = types.KeyboardButton('Внести траты')
     item3 = types.KeyboardButton('Категории трат')
     item4 = types.KeyboardButton('Подсказки')
-    murkup.add(item1, item2, item3, item4)
+    item5 = types.KeyboardButton('Что нужно купить')
+    murkup.add(item1, item2, item3, item4, item5)
     bot.send_message(chat_id=message.chat.id, text=dictionary['started_message'], reply_markup=murkup)
     user_name = 'User' + str(message.chat.id)
     if not User.objects.filter(username=user_name):
@@ -87,13 +88,21 @@ def ask_time_zone(message, g):
     item2 = types.KeyboardButton('Внести траты')
     item3 = types.KeyboardButton('Категории трат')
     item4 = types.KeyboardButton('Подсказки')
-    murkup.add(item1, item2, item3, item4)
+    item5 = types.KeyboardButton('Что нужно купить')
+    murkup.add(item1, item2, item3, item4, item5)
     bot.send_message(chat_id=message.chat.id, text=dictionary['add_profile'], reply_markup=murkup)
     bot.register_next_step_handler(message, bot_message)
 
 
 @bot.message_handler(content_types=['text'])
 def bot_message(message):
+    user_name = 'User' + str(message.chat.id)
+    plan = PlanExpenses.objects.filter(
+        user_id=User.objects.filter(username=user_name).values('id')[0]['id'])
+    bay_list = []
+    if plan:
+        for i in plan:
+            bay_list.append(i.product)
     if message.chat.type == 'private':
         if message.text == 'Подсказки':
             bot.send_message(chat_id=message.chat.id, text=dictionary['help_message'])
@@ -109,6 +118,9 @@ def bot_message(message):
         elif message.text == 'Статистика за все время':
             get_history(message)
 
+        elif message.text == 'Что нужно купить':
+            get_plan(message)
+
         elif message.text == 'Статистика за день':
             get_history(message)
 
@@ -118,11 +130,13 @@ def bot_message(message):
             item2 = types.KeyboardButton('Внести траты')
             item3 = types.KeyboardButton('Категории трат')
             item4 = types.KeyboardButton('Подсказки')
-            murkup.add(item1, item2, item3, item4)
+            item5 = types.KeyboardButton('Что нужно купить')
+            murkup.add(item1, item2, item3, item4, item5)
 
             bot.send_message(chat_id=message.chat.id, text='Выберите следующее действие', reply_markup=murkup)
 
         elif message.text == 'Внести траты':
+            check_limit(message)
             murkup = types.ReplyKeyboardMarkup(resize_keyboard=True)
             item1 = types.KeyboardButton('Продукты \U0001F353')
             item2 = types.KeyboardButton('Проезд \U0001F68C')
@@ -151,6 +165,18 @@ def bot_message(message):
 
         elif message.text == 'Статистика за период':
             show_calendar(message)
+
+        elif message.text == 'Купить из списка':
+            bay_from_list(message)
+
+        elif message.text in bay_list:
+            bot.send_message(chat_id=message.chat.id, text='Сколько потратили?')
+            print(message.text)
+            bot.register_next_step_handler(message, add_product_in_bay_list, message.text)
+
+
+
+
 
 
 def asc_expenses(message, category):

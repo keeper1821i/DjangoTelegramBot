@@ -3,7 +3,10 @@ import datetime
 from django.contrib.auth.models import User
 
 from FinBot.config import bot
+from bot_app.models import Profile
 from expenses_app.models import Expenses
+from plans_app.models import PlanExpenses
+from telebot import types
 
 
 def get_history(message):
@@ -25,7 +28,7 @@ def history(message):
     if message.text == 'Статистика за день':
         expenses = Expenses.objects.filter(
             user_id=User.objects.filter(username=user_name).values('id')[0]['id'],
-            created=datetime.date.today())
+            created__date=datetime.date.today())
         return expenses
     elif message.text == 'Статистика за все время':
         expenses = Expenses.objects.filter(
@@ -58,5 +61,73 @@ def add_product(message, category, expenses, summ):
             money=int(summ),
             user_id=User.objects.filter(username=user_name).values('id')[0]['id']
         )
+    bot.send_message(chat_id=message.chat.id, text='Расходы успешно добавлены!')
+
+
+def check_limit(message):
+    limit = Profile.objects.filter(external_id=message.chat.id).values('limit')[0]['limit']
+    if limit:
+        user_name = 'User' + str(message.chat.id)
+        expenses = Expenses.objects.filter(user_id=User.objects.filter(username=user_name).values('id')[0]['id'], created__date=datetime.date.today())
+        total_exp = 0
+        if expenses:
+            for i in expenses:
+                total_exp += i.money
+        if total_exp > limit:
+            res = total_exp - limit
+            bot.send_message(chat_id=message.chat.id, text=f'Превышение суточного лимита на {res} рублей!')
+        elif total_exp == limit:
+            bot.send_message(chat_id=message.chat.id, text=f'Достигнут суточный лимит трат!')
+
+
+def get_plan(message):
+    user_name = 'User' + str(message.chat.id)
+    plan = PlanExpenses.objects.filter(
+        user_id=User.objects.filter(username=user_name).values('id')[0]['id'])
+    if plan:
+        plan_list = ''
+        for i in plan:
+            plan_list += i.product + '\n'
+        murkup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        item1 = types.KeyboardButton('Назад \U0001F448')
+        item2 = types.KeyboardButton('Купить из списка')
+        murkup.add(item1, item2)
+        bot.send_message(chat_id=message.chat.id, text=f'Вам необходимо купить: \n {plan_list} ', reply_markup=murkup)
+    else:
+        bot.send_message(chat_id=message.chat.id, text='Списка покупок еще нет:')
+
+def bay_from_list(message):
+    user_name = 'User' + str(message.chat.id)
+    plan = PlanExpenses.objects.filter(
+        user_id=User.objects.filter(username=user_name).values('id')[0]['id'])
+    bay_list = []
+    if plan:
+        murkup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+        for i in plan:
+            murkup.add(types.KeyboardButton(i.product))
+            bay_list.append(i.product)
+        murkup.add(types.KeyboardButton('Назад \U0001F448'))
+        bot.send_message(chat_id=message.chat.id, text=f'Что купили?', reply_markup=murkup)
+
+    else:
+        bot.send_message(chat_id=message.chat.id, text='Списка покупок еще нет:')
+    return bay_list
+
+
+def add_product_in_bay_list(message, product):
+    user_name = 'User' + str(message.chat.id)
+    category = PlanExpenses.objects.filter(
+        user_id=User.objects.filter(username=user_name).values('id')[0]['id'], product=product)
+    print(category.values('category')[0]['category'])
+    Expenses.objects.create(
+            category=category.values('category')[0]['category'],
+            product=product,
+            money=int(message.text),
+            user_id=User.objects.filter(username=user_name).values('id')[0]['id']
+        )
+    PlanExpenses.objects.filter(
+        user_id=User.objects.filter(username=user_name).values('id')[0]['id'], product=product).delete()
+    bay_from_list(message)
     bot.send_message(chat_id=message.chat.id, text='Расходы успешно добавлены!')
 
