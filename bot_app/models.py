@@ -10,6 +10,7 @@ class Profile(models.Model):
     time_zone = models.CharField(verbose_name='Часовой пояс', max_length=3, null=True)
     token = models.CharField(verbose_name='Токен', max_length=65, null=True)
     limit = models.IntegerField(verbose_name='Суточный лимит', null=True)
+    month_limit = models.IntegerField(verbose_name='Месячный лимит', null=True)
 
     class Meta:
         verbose_name = 'Профиль'

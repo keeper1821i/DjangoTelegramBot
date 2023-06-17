@@ -39,3 +39,19 @@ class AddLimit(APIView):
         else:
             return Response('такого пользователя нет', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response('test', status=status.HTTP_201_CREATED)
+
+
+class AddMonthLimit(APIView):
+    """апи для установления месячного лимита трат """
+    def post(self, request):
+        queryset = Profile.objects.all()
+        username = request.data.get('user')
+        limit = request.data.get('monthlimit')
+        if User.objects.filter(username='User' + username).exists():
+            user = User.objects.get(username='User' + username)
+            profile = queryset.get(user=user.id)
+            profile.month_limit = int(limit)
+            profile.save()
+        else:
+            return Response('такого пользователя нет', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response('test', status=status.HTTP_201_CREATED)
