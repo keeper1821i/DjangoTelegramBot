@@ -82,7 +82,11 @@ def ask_time_zone(message, g):
                            user_id=User.objects.filter(username=user_name).values('id')[0]['id'],
                            name=user_name,
                            gender=g,
-                           time_zone=message.text)
+                           time_zone=message.text,
+                           limit='500',
+                           month_limit='15000',
+                           day_text='Внимание! Вы превысили установленный дневной лимит трат.',
+                           month_text='Внимание! Вы превысили установленный месячный лимит трат.')
     murkup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     item1 = types.KeyboardButton('Статистика')
     item2 = types.KeyboardButton('Внести траты')
