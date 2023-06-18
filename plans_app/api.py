@@ -12,11 +12,13 @@ class AddPlan(APIView):
         username = request.data.get('user')
         plan = request.data.get('plan')
         category = request.data.get('category')
+        date = request.data.get('date')
         if User.objects.filter(username='User' + username).exists():
             user = User.objects.get(username='User' + username)
             new_plan = PlanExpenses(product=plan,
                                     user=user,
-                                    category=category)
+                                    category=category,
+                                    created=date)
             new_plan.save()
         else:
             return Response('такого пользователя нет', status=status.HTTP_500_INTERNAL_SERVER_ERROR)

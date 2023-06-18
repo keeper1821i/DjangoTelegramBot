@@ -11,6 +11,8 @@ class Profile(models.Model):
     token = models.CharField(verbose_name='Токен', max_length=65, null=True)
     limit = models.IntegerField(verbose_name='Суточный лимит', null=True)
     month_limit = models.IntegerField(verbose_name='Месячный лимит', null=True)
+    day_text = models.CharField(verbose_name='екст лимита', max_length=100)
+    month_text = models.CharField(verbose_name='екст лимита', max_length=100)
 
     class Meta:
         verbose_name = 'Профиль'
