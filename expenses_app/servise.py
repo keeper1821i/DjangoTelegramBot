@@ -1,5 +1,4 @@
 import itertools
-
 from django.contrib.auth.models import User
 
 from bot_app.models import Profile
@@ -8,7 +7,6 @@ from bot_app.models import Profile
 def top_cat(queryset, k):
     cat_dict = {}
     cat_list = []
-    i = 0
     for i in queryset.iterator():
         if i.category in cat_dict:
             cat_dict[i.category] += 1
@@ -18,9 +16,7 @@ def top_cat(queryset, k):
     sorted_dict = {k: v for k, v in sorted_tuples}
     for key, value in sorted_dict.items():
         cat_list.append({'category': key, 'quantity': value})
-    print(sorted_dict)
-    print(cat_list)
-    return cat_list
+    return cat_list[:int(k)]
 
 
 def check_token(token, user):

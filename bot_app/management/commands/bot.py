@@ -140,7 +140,7 @@ def bot_message(message):
             bot.send_message(chat_id=message.chat.id, text='Выберите следующее действие', reply_markup=murkup)
 
         elif message.text == 'Внести траты':
-            check_limit(message)
+            # check_limit(message)
             murkup = types.ReplyKeyboardMarkup(resize_keyboard=True)
             item1 = types.KeyboardButton('Продукты \U0001F353')
             item2 = types.KeyboardButton('Проезд \U0001F68C')
@@ -184,8 +184,20 @@ def bot_message(message):
 
 
 def asc_expenses(message, category):
-    bot.send_message(chat_id=message.chat.id, text='Сколько потратили?')
-    bot.register_next_step_handler(message, asc_summ, category, message.text)
+    if message.text == 'Назад \U0001F448':
+        bot.register_next_step_handler(message, bot_message)
+        murkup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        item1 = types.KeyboardButton('Статистика')
+        item2 = types.KeyboardButton('Внести траты')
+        item3 = types.KeyboardButton('Категории трат')
+        item4 = types.KeyboardButton('Подсказки')
+        item5 = types.KeyboardButton('Что нужно купить')
+        murkup.add(item1, item2, item3, item4, item5)
+
+        bot.send_message(chat_id=message.chat.id, text='Выберите следующее действие', reply_markup=murkup)
+    else:
+        bot.send_message(chat_id=message.chat.id, text='Сколько потратили?')
+        bot.register_next_step_handler(message, asc_summ, category, message.text)
 
 def asc_summ(message, category, expenses):
     bot.send_message(chat_id=message.chat.id, text='Обработка.....')

@@ -65,23 +65,21 @@ def add_product(message, category, expenses, summ):
 
 
 def check_limit(message):
-    limit = Profile.objects.filter(external_id=message.chat.id).values('limit')[0]['limit']
-    month_limit = Profile.objects.filter(external_id=message.chat.id).values('month_limit')[0]['month_limit']
-    if limit:
-        user_name = 'User' + str(message.chat.id)
-        expenses = Expenses.objects.filter(user_id=User.objects.filter(username=user_name).values('id')[0]['id'], created__date=datetime.date.today())
-        total_exp = 0
-        if expenses:
-            for i in expenses:
-                total_exp += i.money
-        if total_exp > limit:
-            bot.send_message(chat_id=message.chat.id, text=Profile.objects.filter(external_id=message.chat.id)
-                             .values('day_text')[0]['day_text'])
-        elif total_exp == limit:
-            bot.send_message(chat_id=message.chat.id, text=f'Достигнут суточный лимит трат!')
-    if month_limit:
-        user_name = 'User' + str(message.chat.id)
-        expenses = Expenses.objects.filter(user_id=User.objects.filter(username=user_name).values('id')[0]['id'], created__date=datetime.date.month)
+    limit = int(Profile.objects.filter(external_id=message.chat.id).values('limit')[0]['limit'])
+    month_limit = int(Profile.objects.filter(external_id=message.chat.id).values('month_limit')[0]['month_limit'])
+    user_name = 'User' + str(message.chat.id)
+    expenses = Expenses.objects.filter(user_id=User.objects.filter(username=user_name).values('id')[0]['id'], created__date=datetime.date.today())
+    total_exp = 0
+    if expenses:
+        for i in expenses:
+            total_exp += i.money
+    if total_exp > limit:
+        bot.send_message(chat_id=message.chat.id, text=Profile.objects.filter(external_id=message.chat.id)
+                         .values('day_text')[0]['day_text'])
+    elif total_exp == limit:
+        bot.send_message(chat_id=message.chat.id, text=f'Достигнут суточный лимит трат!')
+    else:
+        expenses = Expenses.objects.filter(user_id=User.objects.filter(username=user_name).values('id')[0]['id'], created__month=datetime.date.month)
         total_exp = 0
         if expenses:
             for i in expenses:

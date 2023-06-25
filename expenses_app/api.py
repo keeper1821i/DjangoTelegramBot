@@ -103,7 +103,7 @@ class ExpensivePurchases(ListModelMixin, CreateModelMixin, GenericAPIView):
             if num:
                 k = int(num)
             queryset = queryset.order_by('-money')[:k]
-            return queryset
+            return Response(queryset)
         else:
             return Response('Не верный токен', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
