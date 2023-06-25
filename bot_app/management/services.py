@@ -48,7 +48,7 @@ def period_history(message, fd, sd):
             res += f'{i.product}({i.category}): {i.money}руб.\n'
             total_exp += i.money
         bot.send_message(chat_id=message.chat.id, text=res)
-        bot.send_message(chat_id=message.chat.id, text=f'Всего трат на сумму: {total_exp}')
+        bot.send_message(chat_id=message.chat.id, text=f'Всего трат на сумму: {total_exp} руб.')
     else:
         bot.send_message(chat_id=message.chat.id, text='За выбранный период у Вас не было расходов')
 
